@@ -1,0 +1,18 @@
+@import url('https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap');
+@import "tailwindcss";
+
+@layer base {
+  html {
+    @apply scroll-smooth;
+    scroll-padding-top: 100px;
+  }
+  body {
+    @apply bg-dark text-primary font-sans leading-relaxed overflow-x-hidden;
+  }
+  h1, h2, h3, h4 {
+    @apply font-serif font-bold;
+  }
+  .gold-text {
+    @apply text-gold;
+  }
+}

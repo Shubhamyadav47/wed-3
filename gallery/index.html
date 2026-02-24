@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Professional Photography Portfolio">
+    <title>Photography Portfolio</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    
+    <style>
+        /* --- CSS STYLES --- */
+        :root {
+            --bg-color: #fcfcfc; /* Soft Off-White */
+            --text-color: #333;
+            --lightbox-bg: rgba(255, 255, 255, 0.98);
+            --gap: 20px;
+            --transition-speed: 0.4s;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent; /* Removes blue highlight on mobile tap */
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Lato', sans-serif;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Typography */
+        header {
+            text-align: center;
+            padding: 80px 20px 50px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 3.5rem;
+            font-weight: 400;
+            letter-spacing: 2px;
+            margin-bottom: 15px;
+            color: #111;
+        }
+
+        .subtitle {
+            font-size: 0.95rem;
+            color: #666;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            font-weight: 300;
+        }
+
+        /* Masonry Layout */
+        .gallery-container {
+            column-count: 3;
+            column-gap: var(--gap);
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .gallery-item {
+            break-inside: avoid;
+            margin-bottom: var(--gap);
+            position: relative;
+            cursor: pointer;
+            border-radius: 2px;
+            overflow: hidden;
+            
+            /* Initial State for Scroll Animation */
+            opacity: 0; 
+            transform: translateY(20px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+
+        /* State when element scrolls into view */
+        .gallery-item.in-view {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .gallery-img {
+            width: 100%;
+            height: auto;
+            display: block;
+            transition: transform var(--transition-speed) ease, filter 0.3s ease;
+            will-change: transform;
+            backface-visibility: hidden;
+        }
+
+        /* HOVER & ACTIVE EFFECTS 
+           We use :active for mobile touch feedback.
+           We use :hover for desktop mouse feedback.
+        */
+        .gallery-item:hover .gallery-img,
+        .gallery-item:active .gallery-img {
+            transform: scale(1.03);
+            filter: brightness(0.95);
+        }
+
+        /* Image Overlay */
+        .overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            padding: 20px;
+            background: linear-gradient(to top, rgba(0,0,0,0.5), transparent);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            color: white;
+            font-family: 'Playfair Display', serif;
+            letter-spacing: 1px;
+            pointer-events: none;
+        }
+
+        .gallery-item:hover .overlay,
+        .gallery-item:active .overlay {
+            opacity: 1;
+        }
+
+        /* Responsive Columns */
+        @media (max-width: 1024px) {
+            .gallery-container { column-count: 2; }
+            h1 { font-size: 2.5rem; }
+        }
+
+        @media (max-width: 600px) {
+            .gallery-container { column-count: 1; }
+            h1 { font-size: 2rem; }
+            header { padding: 50px 20px 30px; }
+        }
+
+        /* Lightbox Overlay */
+        .lightbox {
+            position: fixed;
+            z-index: 2000;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: var(--lightbox-bg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .lightbox.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        /* Lightbox Image Container */
+        .lightbox-content {
+            position: relative;
+            max-width: 90%;
+            max-height: 85vh;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+            transform: scale(0.96);
+            transition: transform 0.3s cubic-bezier(0.2, 0, 0.2, 1);
+        }
+
+        .lightbox.active .lightbox-content {
+            transform: scale(1);
+        }
+
+        .lightbox-image {
+            max-width: 100%;
+            max-height: 85vh;
+            display: block;
+            object-fit: contain;
+        }
+
+        /* Controls */
+        .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            font-size: 40px;
+            color: #333;
+            cursor: pointer;
+            z-index: 2001;
+            line-height: 1;
+            transition: transform 0.2s;
+        }
+        
+        .close-btn:hover { transform: rotate(90deg); }
+
+        .nav-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            font-size: 30px;
+            color: #555;
+            cursor: pointer;
+            padding: 30px;
+            z-index: 2001;
+            transition: all 0.2s;
+            outline: none;
+        }
+
+        .nav-btn:hover { color: #000; transform: translateY(-50%) scale(1.1); }
+        .prev-btn { left: 10px; }
+        .next-btn { right: 10px; }
+
+        /* Loader */
+        .loader {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #333;
+            border-radius: 50%;
+            width: 30px; height: 30px;
+            animation: spin 1s linear infinite;
+            display: none;
+        }
+
+        @keyframes spin {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        /* Hide elements on mobile */
+        @media (max-width: 768px) {
+            .nav-btn { padding: 15px; font-size: 24px; }
+        }
+    </style>
+</head>
+<body>
+
+
+    <main class="gallery-container">
+        <!-- 
+            Note: We keep the structure identical.
+            The IntersectionObserver in JS will animate these as they scroll into view.
+        -->
+        <div class="gallery-item">
+            <img src="1.webp" 
+                 alt="Portrait Study" class="gallery-img" loading="lazy">
+            <div class="overlay"></div>
+        </div>
+
+        <div class="gallery-item">
+            <img src="2.webp" 
+                 alt="Mountain Mist" class="gallery-img" loading="lazy">
+        </div>
+
+        <div class="gallery-item">
+            <img src="3.webp" 
+                 alt="Nature" class="gallery-img" loading="lazy">
+        </div>
+
+        <div class="gallery-item">
+            <img src="4.webp" 
+                 alt="Urban Style" class="gallery-img" loading="lazy">
+        </div>
+
+        <div class="gallery-item">
+            <img src="5.webp" 
+                 alt="Lifestyle" class="gallery-img" loading="lazy">
+        </div>
+
+        <div class="gallery-item">
+            <img src="6.webp" 
+                 alt="Coffee" class="gallery-img" loading="lazy">
+        </div>
+        
+        <div class="gallery-item">
+            <img src="7.webp" 
+                 alt="Forest" class="gallery-img" loading="lazy">
+        </div>
+         <div class="gallery-item">
+            <img src="8.webp" 
+                 alt="Forest" class="gallery-img" loading="lazy">
+        </div>
+         <div class="gallery-item">
+            <img src="9.webp" 
+                 alt="Forest" class="gallery-img" loading="lazy">
+        </div>
+        
+        
+    </main>
+
+    <div id="lightbox" class="lightbox">
+        <div class="loader"></div>
+        <span class="close-btn">&times;</span>
+        <button class="nav-btn prev-btn" aria-label="Previous Image">&#10094;</button>
+        
+        <div class="lightbox-content">
+            <img class="lightbox-image" src="" alt="">
+        </div>
+        
+        <button class="nav-btn next-btn" aria-label="Next Image">&#10095;</button>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const galleryItems = document.querySelectorAll('.gallery-item');
+            const lightbox = document.getElementById('lightbox');
+            const lightboxImg = document.querySelector('.lightbox-image');
+            const loader = document.querySelector('.loader');
+            const closeBtn = document.querySelector('.close-btn');
+            const prevBtn = document.querySelector('.prev-btn');
+            const nextBtn = document.querySelector('.next-btn');
+            
+            let currentIndex = 0;
+            let images = [];
+
+            // 1. Initialize Gallery Data & Events
+            galleryItems.forEach((item, index) => {
+                const img = item.querySelector('img');
+                images.push({
+                    src: img.src,
+                    fullSrc: img.src, 
+                    alt: img.alt
+                });
+
+                item.addEventListener('click', () => {
+                    currentIndex = index;
+                    openLightbox();
+                });
+            });
+
+            // 2. Intersection Observer (Scroll Animation for Mobile)
+            // This detects when images enter the screen and adds the 'in-view' class
+            const observerOptions = {
+                threshold: 0.1, // Trigger when 10% of item is visible
+                rootMargin: "0px 0px -50px 0px"
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('in-view');
+                        observer.unobserve(entry.target); // Only animate once
+                    }
+                });
+            }, observerOptions);
+
+            galleryItems.forEach(item => {
+                observer.observe(item);
+            });
+
+            // 3. Lightbox Functions
+            function openLightbox() {
+                lightbox.classList.add('active');
+                document.body.style.overflow = 'hidden'; 
+                loadImage(currentIndex);
+            }
+
+            function closeLightbox() {
+                lightbox.classList.remove('active');
+                document.body.style.overflow = 'auto'; 
+            }
+
+            function loadImage(index) {
+                loader.style.display = 'block';
+                lightboxImg.style.opacity = '0.5';
+                
+                const imgObj = images[index];
+                const tempImg = new Image();
+                tempImg.src = imgObj.fullSrc;
+                
+                tempImg.onload = () => {
+                    lightboxImg.src = imgObj.fullSrc;
+                    lightboxImg.alt = imgObj.alt;
+                    loader.style.display = 'none';
+                    lightboxImg.style.opacity = '1';
+                };
+            }
+
+            function showNext() {
+                currentIndex = (currentIndex + 1) % images.length;
+                loadImage(currentIndex);
+            }
+
+            function showPrev() {
+                currentIndex = (currentIndex - 1 + images.length) % images.length;
+                loadImage(currentIndex);
+            }
+
+            // 4. Event Listeners
+            closeBtn.addEventListener('click', closeLightbox);
+            nextBtn.addEventListener('click', (e) => { e.stopPropagation(); showNext(); });
+            prevBtn.addEventListener('click', (e) => { e.stopPropagation(); showPrev(); });
+            
+            lightbox.addEventListener('click', (e) => {
+                if (e.target === lightbox) closeLightbox();
+            });
+
+            // 5. Keyboard Support
+            document.addEventListener('keydown', (e) => {
+                if (!lightbox.classList.contains('active')) return;
+                if (e.key === 'Escape') closeLightbox();
+                if (e.key === 'ArrowRight') showNext();
+                if (e.key === 'ArrowLeft') showPrev();
+            });
+
+            // 6. Swipe Support (Touch)
+            let touchStartX = 0;
+            let touchEndX = 0;
+
+            lightbox.addEventListener('touchstart', (e) => {
+                touchStartX = e.changedTouches[0].screenX;
+            });
+
+            lightbox.addEventListener('touchend', (e) => {
+                touchEndX = e.changedTouches[0].screenX;
+                if (touchEndX < touchStartX - 50) showNext();
+                if (touchEndX > touchStartX + 50) showPrev();
+            });
+        });
+    </script>
+</body>
+</html>
